@@ -1,10 +1,12 @@
 package ac.pool.point;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import soot.Local;
 import soot.PointsToAnalysis;
 import soot.PointsToSet;
+import soot.RefType;
 import soot.Scene;
 import soot.SootMethod;
 import soot.Type;
@@ -39,9 +41,15 @@ public class KeyPoint {
 		return reachingObjects(getCaller());
 	}
 	
-	public Set<Type> getCallerPossibleType() {
+	public Set<RefType> getCallerPossibleType() {
 		PointsToSet pts = getCallerPointsToSet();
-		return pts.possibleTypes();
+		Set<RefType> set = new HashSet<RefType>();
+		for(Type type: pts.possibleTypes()) {
+			if(type instanceof RefType) {
+				set.add((RefType) type);
+			}
+		}
+		return set ;
 	}
 	
 	public boolean isAliasCaller(KeyPoint otherKeyPoint) {

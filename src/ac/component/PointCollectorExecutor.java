@@ -57,19 +57,19 @@ public class PointCollectorExecutor extends PointCollector {
 	protected InitPoint newInitPoint(SootMethod method, Stmt stmt) {
 		return InitPoint.newInitPoint(method, stmt);
 	}
-	
+
 	@Override
 	protected KeyPoint newStartPoint(SootMethod method, Stmt stmt) {
 		return KeyPoint.newPoint(method, stmt);
 	}
-	
+
 	@Override
 	protected OneParaValueKeyPoint newSetMaxThreadSizePoint(SootMethod method, Stmt stmt) {
 		int index = 0;
-		if(stmt.getInvokeExpr().getArgCount() > 1 && stmt.getInvokeExpr().getArg(1).getType() instanceof IntType) {
+		if (stmt.getInvokeExpr().getArgCount() > 1 && stmt.getInvokeExpr().getArg(1).getType() instanceof IntType) {
 			index = 1;
 		}
-		return  OneParaValueKeyPoint.newOneParaValueKeyPoint(method, stmt, index);
+		return OneParaValueKeyPoint.newOneParaValueKeyPoint(method, stmt, index);
 	}
 
 	@Override
@@ -122,7 +122,8 @@ public class PointCollectorExecutor extends PointCollector {
 		String subSig = stmt.getInvokeExpr().getMethod().getSubSignature();
 		return ExecutorSig.METHOD_SUBSIG_SUBMIT_CALLABLE.equals(subSig)
 				|| ExecutorSig.METHOD_SUBSIG_SUBMIT_RUNNABLE.equals(subSig)
-				|| ExecutorSig.METHOD_SUBSIG_SUBMIT_RUNNABLE_T.equals(subSig);
+				|| ExecutorSig.METHOD_SUBSIG_SUBMIT_RUNNABLE_T.equals(subSig)
+				|| ExecutorSig.METHOD_SUBSIG_EXECUTE.equals(subSig);
 	}
 
 	@Override
@@ -147,24 +148,26 @@ public class PointCollectorExecutor extends PointCollector {
 		return isSubmitPoint(stmt);
 	}
 
-
 	@Override
 	protected boolean isSetMaxThreadSizePoint(Stmt stmt) {
-		return ExecutorSig.METHOD_SIG_setMaximumPoolSize.equals(stmt.getInvokeExpr().getMethod().getSignature()) || isSetCoreThreadSizePoint(stmt);
+		return ExecutorSig.METHOD_SIG_setMaximumPoolSize.equals(stmt.getInvokeExpr().getMethod().getSignature())
+				|| (!ExecutorSig.METHOD_SIG_setCorePoolSize.equals(stmt.getInvokeExpr().getMethod().getSignature())
+						&& isSetCoreThreadSizePoint(stmt));
 	}
 
 	@Override
 	protected boolean isSetCoreThreadSizePoint(Stmt stmt) {
-		if(ExecutorSig.METHOD_SIG_setCorePoolSize.equals(stmt.getInvokeExpr().getMethod().getSignature())) {
+		if (ExecutorSig.METHOD_SIG_setCorePoolSize.equals(stmt.getInvokeExpr().getMethod().getSignature())) {
 			return true;
-		}else {
-			if(isInitPoint(stmt)) {
-				if(stmt.getInvokeExpr().getArgCount() > 0 && stmt.getInvokeExpr().getArg(0).getType() instanceof IntType) {
+		} else {
+			if (isInitPoint(stmt)) {
+				if (stmt.getInvokeExpr().getArgCount() > 0
+						&& stmt.getInvokeExpr().getArg(0).getType() instanceof IntType) {
 					return true;
-				} 
+				}
 			}
 		}
-		return  false;
+		return false;
 	}
 
 }

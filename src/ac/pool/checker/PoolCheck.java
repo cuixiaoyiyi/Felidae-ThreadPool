@@ -16,7 +16,6 @@ import ac.pool.point.PointCollector;
 import ac.util.Log;
 import soot.RefType;
 import soot.Scene;
-import soot.Type;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Edge;
 
@@ -43,6 +42,7 @@ public class PoolCheck implements ICheck {
 			Log.i(component, " # end: StartPoint set is empty..  ");
 			return;
 		}
+		Log.i(component, " # InitialPoints Size ", pointCollector.getInitialPoints().size());
 		Log.i(component, " # StartPoints Size ", pointCollector.getStartPoints().size());
 		Log.i(component, " # 1. Start HTR..  ");
 		for (InitPoint point : pointCollector.getInitialPoints()) {
@@ -50,8 +50,7 @@ public class PoolCheck implements ICheck {
 				if (!point.isAliasCaller(submitPoint)) {
 					continue;
 				}
-				for (Type type : submitPoint.getParaLocalPossiableTypes()) {
-					RefType refType = (RefType) type;
+				for (RefType refType : submitPoint.getParaLocalPossiableTypes()) {
 					if (HTRChecker.hasHTRMisuse(refType)) {
 						ThreadErrorRecord.recordHTR(component, point, refType.getSootClass());
 						break HTRLoop;
@@ -69,8 +68,7 @@ public class PoolCheck implements ICheck {
 					if (!shutDownNowPoint.isAliasCaller(point)) {
 						continue;
 					}
-					for (Type type : submitPoint.getParaLocalPossiableTypes()) {
-						RefType refType = (RefType) type;
+					for (RefType refType : submitPoint.getParaLocalPossiableTypes()) {
 						if (iNRClasses.contains(refType.toString())) {
 							ThreadErrorRecord.recordINR(component, point, refType.getSootClass());
 							break INRLoop;
@@ -107,21 +105,19 @@ public class PoolCheck implements ICheck {
 
 		Log.i(component, " # 3.1. Start NT..  ");
 
-		if (pointCollector instanceof PointCollectorExecutor) {
-			for (InitPoint point : pointCollector.getInitialPoints()) {
-				Set<KeyPoint> keyPoints = new HashSet<KeyPoint>();
-				keyPoints.addAll(pointCollector.getShutDownNowPoints());
-				keyPoints.addAll(pointCollector.getShutDownPoints());
-				boolean terminate = false;
-				for (KeyPoint terminatePoint : keyPoints) {
-					if (point.isAliasCaller(terminatePoint)) {
-						terminate = true;
-						break;
-					}
+		for (InitPoint point : pointCollector.getInitialPoints()) {
+			Set<KeyPoint> keyPoints = new HashSet<KeyPoint>();
+			keyPoints.addAll(pointCollector.getShutDownNowPoints());
+			keyPoints.addAll(pointCollector.getShutDownPoints());
+			boolean terminate = false;
+			for (KeyPoint terminatePoint : keyPoints) {
+				if (point.isAliasCaller(terminatePoint)) {
+					terminate = true;
+					break;
 				}
-				if (!terminate) {
-					ThreadErrorRecord.recordNT(component, point);
-				}
+			}
+			if (!terminate) {
+				ThreadErrorRecord.recordNT(component, point);
 			}
 		}
 
@@ -187,14 +183,14 @@ public class PoolCheck implements ICheck {
 						continue;
 					}
 					if (IntMaxChecker.hasMaxIntegerSizeMisuse(setSizePoint)) {
-						ThreadErrorRecord.recordUBNT(component + "-core-", point);
+						ThreadErrorRecord.recordUBNT(component + "-coreSize-", point);
 						break;
 					}
 				}
 			}
 		}
 
-		Log.i(component, " # 10. Start UnboundedNumberOfThread (UBNT Max)..  ");
+		Log.i(component, " # 10. Start UnboundedNumberOfThread (UBNT Max)..  ", pointCollector.getSetMaxThreadSizePoints());
 		if (pointCollector instanceof PointCollectorExecutor) {
 			for (InitPoint point : pointCollector.getInitialPoints()) {
 				for (OneParaValueKeyPoint setSizePoint : pointCollector.getSetMaxThreadSizePoints()) {
@@ -202,7 +198,7 @@ public class PoolCheck implements ICheck {
 						continue;
 					}
 					if (IntMaxChecker.hasMaxIntegerSizeMisuse(setSizePoint)) {
-						ThreadErrorRecord.recordUBNT(component + "-Max-", point);
+						ThreadErrorRecord.recordUBNT(component + "-MaxSize-", point);
 						break;
 					}
 				}

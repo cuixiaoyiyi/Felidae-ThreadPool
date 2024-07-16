@@ -83,4 +83,8 @@ public class AsyncInherit {
 				|| InheritanceProcess.isInheritedFromGivenClass(theClass, AsyncTaskSig.CLASS_SUPPORT_FRAGMENT_V7, MatchType.equal);
 	}
 
+	public static boolean isInheritedFromAsyncTask(SootClass theClass) {
+		return InheritanceProcess.isInheritedFromGivenClass(theClass, AsyncTaskSig.ASYNC_TASK, MatchType.equal);
+	}
+
 }

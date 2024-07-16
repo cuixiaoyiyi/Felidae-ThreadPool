@@ -1,6 +1,8 @@
 package ac.constant;
 
 public class AsyncTaskSig {
+	
+	
 	// Android platform class
 	public static final String CLASS_VIEW = "android.view.View";
 	public static final String CLASS_ACTIVITY = "android.app.Activity";

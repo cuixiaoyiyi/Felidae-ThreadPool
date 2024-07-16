@@ -40,14 +40,16 @@ public class SetThreadNameChecker {
 	private static Set<Local> getCoreThreadsFromThreadFactory(Local threadFactoryLocal) {
 		Set<Local> locals = new HashSet<>();
 		for (Type taskPossiableType : KeyPoint.pta.reachingObjects(threadFactoryLocal).possibleTypes()) {
-			RefType refType = (RefType) taskPossiableType;
-			SootMethod newThreadMethod = refType.getSootClass().getMethodUnsafe(ThreadSig.METHOD_SUBSIG_NEWTHREAD);
-			if (newThreadMethod != null && newThreadMethod.hasActiveBody()) {
-				for (Unit unit : newThreadMethod.getActiveBody().getUnits()) {
-					if (unit instanceof ReturnStmt) {
-						ReturnStmt returnStmt = (ReturnStmt) unit;
-						if (returnStmt.getOp() instanceof Local) {
-							locals.add((Local) returnStmt.getOp());
+			if(taskPossiableType instanceof RefType) {
+				RefType refType = (RefType) taskPossiableType;
+				SootMethod newThreadMethod = refType.getSootClass().getMethodUnsafe(ThreadSig.METHOD_SUBSIG_NEWTHREAD);
+				if (newThreadMethod != null && newThreadMethod.hasActiveBody()) {
+					for (Unit unit : newThreadMethod.getActiveBody().getUnits()) {
+						if (unit instanceof ReturnStmt) {
+							ReturnStmt returnStmt = (ReturnStmt) unit;
+							if (returnStmt.getOp() instanceof Local) {
+								locals.add((Local) returnStmt.getOp());
+							}
 						}
 					}
 				}

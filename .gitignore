@@ -5,7 +5,7 @@
 /target/
 
 # sootOutput
-/sootOutput/
+*output*
 
 # .settings
 /.settings/

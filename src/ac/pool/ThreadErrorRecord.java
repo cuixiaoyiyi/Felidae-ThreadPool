@@ -73,7 +73,7 @@ public class ThreadErrorRecord {
 	}
 	
 	public static void recordCallerRunsChecker(String component, KeyPoint point) {
-		String filePath = ERROR_FOLDER + "CallerRuns-sum.txt";
+		String filePath = ERROR_FOLDER + component + "CallerRuns-sum.txt";
 		recordSum(component, point, null, filePath);
 	}
 	
@@ -148,10 +148,10 @@ public class ThreadErrorRecord {
 		errorInstanceSet.add(newPoint);
 		rightInstanceSet.remove(newPoint);
 		record(content, filePath);
-
-		String errorInstanceFilePath = ERROR_FOLDER + component + "error-async.txt";
-		String key = getObjectKey(component, newPoint, sootClass);
-		record(key + "\n", errorInstanceFilePath);
+//
+//		String errorInstanceFilePath = ERROR_FOLDER + component + "error-async.txt";
+//		String key = getObjectKey(component, newPoint, sootClass);
+//		record(key + "\n", errorInstanceFilePath);
 	}
 
 	static long currentTime = PoolMain.preprocessStartTime;

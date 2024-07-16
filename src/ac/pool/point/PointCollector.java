@@ -89,11 +89,16 @@ public abstract class PointCollector {
 		}
 		if (isInitPoint(stmt)) {
 			InitPoint point = newInitPoint(method, stmt);
-			initialPoints.add(point);
+			if (point != null) {
+
+				initialPoints.add(point);
+			}
 		}
 		if (isSubmitPoint(stmt)) {
 			OneParaKeyPoint point = newSubmitPoint(method, stmt);
-			submitPoints.add(point);
+			if (point != null) {
+				submitPoints.add(point);
+			}
 		}
 		if (isDestroyPoint(stmt)) {
 			DestroyPoint point = newDestroyPoint(method, stmt);
@@ -104,46 +109,67 @@ public abstract class PointCollector {
 		}
 		if (isShutdownNowPoint(stmt)) {
 			KeyPoint point = newShutdownNowPoint(method, stmt);
-			shutDownNowPoints.add(point);
+			if (point != null) {
+				shutDownNowPoints.add(point);
+			}
 		}
 		if (isShutdownPoint(stmt)) {
 			KeyPoint point = newShutdownPoint(method, stmt);
-			shutDownPoints.add(point);
+			if (point != null) {
+				shutDownPoints.add(point);
+			}
 		}
 		if (isStartPoint(stmt)) {
 			KeyPoint point = newStartPoint(method, stmt);
-			startPoints.add(point);
+			if (point != null) {
+				startPoints.add(point);
+			}
 		}
 		if (isIsTerminatedPoint(stmt)) {
 			KeyPoint point = newIsTerminatedPoint(method, stmt);
-			isTerminatedPoints.add(point);
+			if (point != null) {
+				isTerminatedPoints.add(point);
+			}
 		}
 		if (isSetFactoryPoint(stmt)) {
 			OneParaKeyPoint point = newSetFactoryPoint(method, stmt);
-			setThreadFactoryPoints.add(point);
+			if (point != null) {
+				setThreadFactoryPoints.add(point);
+			}
 		}
 		if (isRejectedExecutionHandlerPoint(stmt)) {
 			OneParaKeyPoint point = newRejectedExecutionHandlerPoint(method, stmt);
-			setRejectedExecutionHandlerPoints.add(point);
+			if (point != null) {
+				setRejectedExecutionHandlerPoints.add(point);
+			}
 		}
 		if (isSetUncaughtExceptionHandlerPoint(stmt)) {
 			KeyPoint point = newSetUncaughtExceptionHandlerPoint(method, stmt);
-			setUncaughtExceptionHandlerPoints.add(point);
+			if (point != null) {
+				setUncaughtExceptionHandlerPoints.add(point);
+			}
 		}
 
 		if (isSetCoreThreadSizePoint(stmt)) {
 			OneParaValueKeyPoint point = newSetCoreThreadSizePoint(method, stmt);
-			setCoreThreadSizePoints.add(point);
+			if (point != null) {
+				setCoreThreadSizePoints.add(point);
+			}
 		}
 
 		if (isSetMaxThreadSizePoint(stmt)) {
+			Log.e(stmt);
 			OneParaValueKeyPoint point = newSetMaxThreadSizePoint(method, stmt);
-			setCoreThreadSizePoints.add(point);
+			if (point != null) {
+				setMaxThreadSizePoints.add(point);
+			}
 		}
 
 		if (isSetThreadNamePoint(stmt)) {
 			KeyPoint point = newSetNamePoint(method, stmt);
-			setNamePoints.add(point);
+			if (point != null) {
+				setNamePoints.add(point);
+			}
 		}
 
 	}

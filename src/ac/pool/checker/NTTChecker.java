@@ -24,7 +24,6 @@ import soot.RefType;
 import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
-import soot.Type;
 import soot.Unit;
 import soot.Value;
 import soot.jimple.InstanceInvokeExpr;
@@ -199,8 +198,8 @@ public class NTTChecker {
 		for (InitPoint initPoint : pointCollector.getInitialPoints()) {
 			boolean alais = localCallerPointsToSet.hasNonEmptyIntersection(initPoint.getCallerPointsToSet());
 			if (alais) {
-				for (Type type : initPoint.getCallerPossibleType()) {
-					pushRunMethodUnitsToConcurrentLinkedQueue(((RefType)type).getSootClass(), visitedUnits, unitQueue,
+				for (RefType type : initPoint.getCallerPossibleType()) {
+					pushRunMethodUnitsToConcurrentLinkedQueue(type.getSootClass(), visitedUnits, unitQueue,
 							unitToMethodQueue);
 
 				}

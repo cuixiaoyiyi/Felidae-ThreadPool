@@ -41,6 +41,7 @@ public class ExceptionHandlerChecker {
 			if (initPoint.isAliasCaller(setFactoryPoint)) {
 				Set<Local> coreThreads = getCoreThreadsFromThreadFactory(setFactoryPoint.getParaLocal());
 				for (Local coreThread : coreThreads) {
+					Log.e("hasFactoryHandler#####", hasBackgroundMethodHandler(coreThread, setUncaughtExceptionHandlerPoints));
 					if (!hasBackgroundMethodHandler(coreThread, setUncaughtExceptionHandlerPoints)) {
 						return false;
 					}
@@ -76,6 +77,7 @@ public class ExceptionHandlerChecker {
 			if (initPoint.isAliasCaller(submitPoint)) {
 				Local task = submitPoint.getParaLocal();
 				if (!hasBackgroundMethodHandler(task, setUncaughtExceptionHandlerPoints)) {
+					Log.e("hasSubmitHandler#####", hasBackgroundMethodHandler(task, setUncaughtExceptionHandlerPoints));
 					return false;
 				}
 			}
@@ -85,7 +87,32 @@ public class ExceptionHandlerChecker {
 
 	private static boolean hasBackgroundMethodHandler(Local task, Set<KeyPoint> setUncaughtExceptionHandlerPoints) {
 		for (KeyPoint keyPoint : setUncaughtExceptionHandlerPoints) { // thread.setUncaughtExceptionHandler();
-			if (keyPoint.isAliasCaller(task)) {
+			if (keyPoint.isAliasCaller(task)) {  
+				/** / fkkk, soot has a bug:
+				 * 
+				 *  $r5 = new cn.ac.ios.PoolTest$2;
+
+        specialinvoke $r5.<cn.ac.ios.PoolTest$2: void <init>(cn.ac.ios.PoolTest)>(r3);  //inner Runnable
+
+        virtualinvoke r1.<java.util.concurrent.ThreadPoolExecutor: java.util.concurrent.Future submit(java.lang.Runnable)>($r5);
+
+        $r7 = <cn.ac.ios.PoolTest$A: cn.ac.ios.PoolTest$A B>;
+
+        if r6 != $r7 goto label1;
+
+        $r10 = <java.lang.System: java.io.PrintStream out>;
+
+        virtualinvoke $r10.<java.io.PrintStream: void print(java.lang.String)>("1");
+
+     label1:
+        $r8 = staticinvoke <java.lang.Thread: java.lang.Thread currentThread()>();
+        
+        
+				 *  then $r8 is  $r5 ??
+				 * */ 
+				Log.e(keyPoint.getStmt());
+				Log.e(task);
+				Log.e("keyPoint.isAliasCaller(task)");
 				return true;
 			}
 		}
@@ -93,10 +120,13 @@ public class ExceptionHandlerChecker {
 			return false;
 		}
 		for (Type taskPossiableType : KeyPoint.pta.reachingObjects(task).possibleTypes()) {
-			SootMethod method = getBackgroundMethod((RefType) taskPossiableType);
-			if (method!=null && !hasExceptionHandler(method)) {
-				return false;
+			if(taskPossiableType instanceof RefType) {
+				SootMethod method = getBackgroundMethod((RefType) taskPossiableType);
+				if (method!=null && !hasExceptionHandler(method)) {
+					return false;
+				}
 			}
+			
 		}
 		return true;
 	}

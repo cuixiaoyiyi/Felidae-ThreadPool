@@ -5,28 +5,23 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
+import ac.component.PointCollectorAsyncTask;
 import ac.component.PointCollectorExecutor;
 import ac.component.PointCollectorThread;
 import ac.constant.ExecutorSig;
-import ac.constant.Signature;
 import ac.constant.ThreadSig;
-import ac.pool.checker.CallerRunsChecker;
 import ac.pool.checker.HTRChecker;
 import ac.pool.checker.INRChecker;
-import ac.pool.checker.NTTChecker;
 import ac.pool.checker.PoolCheck;
 import ac.pool.point.InitPoint;
 import ac.pool.point.KeyPoint;
 import ac.pool.point.PointCollector;
-import ac.pool.checker.ILChecker;
-
 import ac.util.AsyncInherit;
 import ac.util.Log;
 import soot.G;
@@ -40,8 +35,6 @@ import soot.Transform;
 import soot.Type;
 import soot.Body;
 import soot.BodyTransformer;
-import soot.jimple.NopStmt;
-import soot.jimple.Stmt;
 import soot.jimple.infoflow.Infoflow;
 import soot.jimple.infoflow.InfoflowConfiguration.CallgraphAlgorithm;
 import soot.jimple.infoflow.InfoflowConfiguration.CodeEliminationMode;
@@ -62,7 +55,7 @@ public class PoolMain {
 
 	static String inputPath = "/Users/cbq/Desktop/apks/app.fedilab.lite.apk";
 
-	public static final String Output = "./ThreadPoolLeopard20221209-Field-PointTo/";
+	public static final String Output = "./Felidae-ThreadPool-output/";
 
 //	public static boolean refinement = true;
 
@@ -198,11 +191,10 @@ public class PoolMain {
 
 	private static void detectMisuse() {
 
-		Log.i("----------detector.detectThread() starts ");
+		Log.i("----------detector starts ");
 		final Set<String> runnableClasses = new HashSet<String>();
 		Set<String> iNRClasses = new HashSet<>();
-		Set<SootClass> sootClasses = Collections.synchronizedSet(new HashSet<SootClass>());
-		sootClasses.addAll(Scene.v().getApplicationClasses());
+		Set<SootClass> sootClasses = new HashSet<>(Scene.v().getApplicationClasses());
 		for (SootClass currentClass : sootClasses) {
 			if (AsyncInherit.isInheritedFromRunnable(currentClass)
 					|| AsyncInherit.isInheritedFromCallable(currentClass)) {
@@ -218,7 +210,10 @@ public class PoolMain {
 		executorCollector.start(sootClasses);
 		
 		PointCollector threadCollector = new PointCollectorThread();
-		executorCollector.start(sootClasses);
+		threadCollector.start(sootClasses);
+		
+		PointCollector asyncTaskCollector = new PointCollectorAsyncTask();
+		asyncTaskCollector.start(sootClasses);
 		
 		
 //		debug(pointCollector);
@@ -235,22 +230,20 @@ public class PoolMain {
 		complementCGFromStartToRun(threadCollector);
 		
 		// check
-		
-		new PoolCheck(threadCollector, "Thread", iNRClasses).check();
-		new PoolCheck(threadCollector, "ExecuteService", iNRClasses).check();
+		new PoolCheck(executorCollector, "ExecuteService-", iNRClasses).check();
+		new PoolCheck(threadCollector, "Thread-", iNRClasses).check();
+		new PoolCheck(asyncTaskCollector, "AsyncTask-", iNRClasses).check();
 		
 		long timeStart = System.currentTimeMillis();
 		ExecutorService executor = PoolCheck.executor;
-		while (executor.isTerminated() || (System.currentTimeMillis() - timeStart > 900000)) {
-			try {
-				Thread.sleep(5 * 1000);
-			} catch (InterruptedException e) {
-				break;
-			}
-		}
-
+		executor.shutdown();
 		
-
+		try {
+			executor.awaitTermination(10, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	static void debug(PointCollector pointCollector) {
@@ -294,8 +287,7 @@ public class PoolMain {
 		for (KeyPoint startPoint : pointCollector.getStartPoints()) {
 			for (InitPoint point : pointCollector.getInitialPoints()) {
 				if (point.isAliasCaller(startPoint)) {
-					for (Type type : point.getCallerPossibleType()) {
-						RefType refType = (RefType) type;
+					for (RefType refType : point.getCallerPossibleType()) {
 						addEdgeFromStartToRunMethod(startPoint, refType.getSootClass());
 					}
 				}
