@@ -11,6 +11,7 @@ public class ThreadSig {
 	public final static String METHOD_SUBSIG_INTERRUPT_SAFELY = "void interrupt()";
 	public final static String METHOD_SUBSIG_IS_INTERRUPTED = "boolean isInterrupted()";
 	public final static String METHOD_SUBSIG_NEWTHREAD = "java.lang.Thread newThread(java.lang.Runnable)";
+	public final static String METHOD_SIG_SET_NAME = "<java.lang.Thread setName(java.lang.String)>";
 	
 	public static final String METHOD_SIG_setUncaughtExceptionHandler = "<java.lang.Thread: void setUncaughtExceptionHandler(java.lang.Thread$UncaughtExceptionHandler)>";
 	

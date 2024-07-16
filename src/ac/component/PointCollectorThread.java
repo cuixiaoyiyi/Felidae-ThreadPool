@@ -4,6 +4,7 @@ import ac.constant.ThreadSig;
 import ac.pool.point.InitPoint;
 import ac.pool.point.KeyPoint;
 import ac.pool.point.OneParaKeyPoint;
+import ac.pool.point.OneParaValueKeyPoint;
 import ac.pool.point.PointCollector;
 import ac.util.AsyncInherit;
 import soot.Local;
@@ -117,6 +118,26 @@ public class PointCollectorThread extends PointCollector {
 	@Override
 	protected boolean isStartPoint(Stmt stmt) {
 		return ThreadSig.METHOD_SIG_START.equals(stmt.getInvokeExpr().getMethod().getSignature());
+	}
+
+	@Override
+	protected OneParaValueKeyPoint newSetMaxThreadSizePoint(SootMethod method, Stmt stmt) {
+		return null;
+	}
+
+	@Override
+	protected OneParaValueKeyPoint newSetCoreThreadSizePoint(SootMethod method, Stmt stmt) {
+		return null;
+	}
+
+	@Override
+	protected boolean isSetMaxThreadSizePoint(Stmt stmt) {
+		return false;
+	}
+
+	@Override
+	protected boolean isSetCoreThreadSizePoint(Stmt stmt) {
+		return false;
 	}
 
 }

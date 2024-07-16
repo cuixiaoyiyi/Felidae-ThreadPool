@@ -5,8 +5,10 @@ import ac.constant.ThreadSig;
 import ac.pool.point.InitPoint;
 import ac.pool.point.KeyPoint;
 import ac.pool.point.OneParaKeyPoint;
+import ac.pool.point.OneParaValueKeyPoint;
 import ac.pool.point.PointCollector;
 import ac.util.AsyncInherit;
+import soot.IntType;
 import soot.SootMethod;
 import soot.jimple.DefinitionStmt;
 import soot.jimple.InvokeExpr;
@@ -59,6 +61,21 @@ public class PointCollectorExecutor extends PointCollector {
 	@Override
 	protected KeyPoint newStartPoint(SootMethod method, Stmt stmt) {
 		return KeyPoint.newPoint(method, stmt);
+	}
+	
+	@Override
+	protected OneParaValueKeyPoint newSetMaxThreadSizePoint(SootMethod method, Stmt stmt) {
+		int index = 0;
+		if(stmt.getInvokeExpr().getArgCount() > 1 && stmt.getInvokeExpr().getArg(1).getType() instanceof IntType) {
+			index = 1;
+		}
+		return  OneParaValueKeyPoint.newOneParaValueKeyPoint(method, stmt, index);
+	}
+
+	@Override
+	protected OneParaValueKeyPoint newSetCoreThreadSizePoint(SootMethod method, Stmt stmt) {
+		int index = 0;
+		return OneParaValueKeyPoint.newOneParaValueKeyPoint(method, stmt, index);
 	}
 
 	@Override
@@ -128,6 +145,26 @@ public class PointCollectorExecutor extends PointCollector {
 	@Override
 	protected boolean isStartPoint(Stmt stmt) {
 		return isSubmitPoint(stmt);
+	}
+
+
+	@Override
+	protected boolean isSetMaxThreadSizePoint(Stmt stmt) {
+		return ExecutorSig.METHOD_SIG_setMaximumPoolSize.equals(stmt.getInvokeExpr().getMethod().getSignature()) || isSetCoreThreadSizePoint(stmt);
+	}
+
+	@Override
+	protected boolean isSetCoreThreadSizePoint(Stmt stmt) {
+		if(ExecutorSig.METHOD_SIG_setCorePoolSize.equals(stmt.getInvokeExpr().getMethod().getSignature())) {
+			return true;
+		}else {
+			if(isInitPoint(stmt)) {
+				if(stmt.getInvokeExpr().getArgCount() > 0 && stmt.getInvokeExpr().getArg(0).getType() instanceof IntType) {
+					return true;
+				} 
+			}
+		}
+		return  false;
 	}
 
 }

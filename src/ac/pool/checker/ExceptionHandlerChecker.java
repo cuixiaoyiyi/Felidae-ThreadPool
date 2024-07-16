@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import ac.constant.AsyncTaskSig;
 import ac.constant.ExecutorSig;
 import ac.constant.ThreadSig;
@@ -26,6 +27,7 @@ import soot.toolkits.graph.ExceptionalUnitGraph;
 import soot.util.Chain;
 
 public class ExceptionHandlerChecker {
+	
 
 	public static boolean hasMisuse(InitPoint initPoint, Set<OneParaKeyPoint> setFactoryPoints,
 			Set<OneParaKeyPoint> submitPoints, Set<KeyPoint> setUncaughtExceptionHandlerPoints) {
@@ -99,7 +101,7 @@ public class ExceptionHandlerChecker {
 		return true;
 	}
 
-	private static SootMethod getBackgroundMethod(RefType taskPossiableType) {
+	static SootMethod getBackgroundMethod(RefType taskPossiableType) {
 		SootClass sootClass = taskPossiableType.getSootClass();
 		SootMethod runMethod = sootClass.getMethodUnsafe(ThreadSig.METHOD_SUBSIG_RUN);
 		if(runMethod == null) {
@@ -186,5 +188,4 @@ public class ExceptionHandlerChecker {
 
 		return resultMethod;
 	}
-
 }

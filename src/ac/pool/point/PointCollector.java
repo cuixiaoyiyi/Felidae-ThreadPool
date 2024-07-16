@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import ac.constant.ThreadSig;
 import ac.pool.checker.HTRChecker;
 import ac.util.InheritanceProcess;
 import ac.util.Log;
@@ -31,7 +32,7 @@ public abstract class PointCollector {
 	protected Set<KeyPoint> shutDownPoints = new HashSet<>();
 
 	protected Set<KeyPoint> shutDownNowPoints = new HashSet<>();
-	
+
 	protected Set<KeyPoint> startPoints = new HashSet<>();
 
 	static protected Set<DestroyPoint> destroyPoints = new HashSet<>();
@@ -43,6 +44,12 @@ public abstract class PointCollector {
 	protected Set<OneParaKeyPoint> setRejectedExecutionHandlerPoints = new HashSet<>();
 
 	protected Set<KeyPoint> setUncaughtExceptionHandlerPoints = new HashSet<>();
+
+	protected Set<OneParaValueKeyPoint> setCoreThreadSizePoints = new HashSet<>();
+
+	protected Set<OneParaValueKeyPoint> setMaxThreadSizePoints = new HashSet<>();
+
+	protected Set<KeyPoint> setNamePoints = new HashSet<>();
 
 	public void start(Collection<SootClass> classes) {
 
@@ -66,7 +73,7 @@ public abstract class PointCollector {
 			}
 		}
 	}
-	
+
 	protected int getParaIndexByType(String type, Stmt stmt) {
 		for (int i = 0; i < stmt.getInvokeExpr().getMethod().getParameterCount(); i++) {
 			if (type.equals(stmt.getInvokeExpr().getMethod().getParameterType(i).toString())) {
@@ -123,8 +130,31 @@ public abstract class PointCollector {
 			KeyPoint point = newSetUncaughtExceptionHandlerPoint(method, stmt);
 			setUncaughtExceptionHandlerPoints.add(point);
 		}
+
+		if (isSetCoreThreadSizePoint(stmt)) {
+			OneParaValueKeyPoint point = newSetCoreThreadSizePoint(method, stmt);
+			setCoreThreadSizePoints.add(point);
+		}
+
+		if (isSetMaxThreadSizePoint(stmt)) {
+			OneParaValueKeyPoint point = newSetMaxThreadSizePoint(method, stmt);
+			setCoreThreadSizePoints.add(point);
+		}
+
+		if (isSetThreadNamePoint(stmt)) {
+			KeyPoint point = newSetNamePoint(method, stmt);
+			setNamePoints.add(point);
+		}
+
 	}
-	
+
+	protected KeyPoint newSetNamePoint(SootMethod method, Stmt stmt) {
+		return KeyPoint.newPoint(method, stmt);
+	}
+
+	protected abstract OneParaValueKeyPoint newSetMaxThreadSizePoint(SootMethod method, Stmt stmt);
+
+	protected abstract OneParaValueKeyPoint newSetCoreThreadSizePoint(SootMethod method, Stmt stmt);
 
 	protected abstract KeyPoint newStartPoint(SootMethod method, Stmt stmt);
 
@@ -158,10 +188,19 @@ public abstract class PointCollector {
 		return null;
 	}
 
+	protected abstract boolean isSetMaxThreadSizePoint(Stmt stmt);
+
+	protected abstract boolean isSetCoreThreadSizePoint(Stmt stmt);
+
 	protected abstract boolean isStartPoint(Stmt stmt);
 
 	protected boolean isDestroyPoint(Stmt stmt) {
 		return DestructibleIdentify.isDestroyMethod(stmt.getInvokeExpr().getMethod());
+	}
+
+	protected boolean isSetThreadNamePoint(Stmt stmt) {
+		return stmt.containsInvokeExpr()
+				&& (ThreadSig.METHOD_SIG_SET_NAME.equals(stmt.getInvokeExpr().getMethod().getSignature()));
 	}
 
 	protected abstract OneParaKeyPoint newSubmitPoint(SootMethod method, Stmt stmt);
@@ -219,9 +258,21 @@ public abstract class PointCollector {
 	public Set<OneParaKeyPoint> getSubmitPoints() {
 		return submitPoints;
 	}
-	
+
 	public Set<KeyPoint> getStartPoints() {
 		return startPoints;
+	}
+
+	public Set<OneParaValueKeyPoint> getSetCoreThreadSizePoints() {
+		return setCoreThreadSizePoints;
+	}
+
+	public Set<OneParaValueKeyPoint> getSetMaxThreadSizePoints() {
+		return setMaxThreadSizePoints;
+	}
+
+	public Set<KeyPoint> getSetNamePoints() {
+		return setNamePoints;
 	}
 
 }

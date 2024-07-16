@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import ac.component.PointCollectorExecutor;
+import ac.component.PointCollectorThread;
 import ac.constant.ExecutorSig;
 import ac.constant.Signature;
 import ac.constant.ThreadSig;
@@ -20,6 +21,7 @@ import ac.pool.checker.CallerRunsChecker;
 import ac.pool.checker.HTRChecker;
 import ac.pool.checker.INRChecker;
 import ac.pool.checker.NTTChecker;
+import ac.pool.checker.PoolCheck;
 import ac.pool.point.InitPoint;
 import ac.pool.point.KeyPoint;
 import ac.pool.point.PointCollector;
@@ -114,7 +116,6 @@ public class PoolMain {
 			}
 			startJars();
 		}
-		thread.interrupt();
 		try {
 			thread.join();
 			Log.i("maxUsedMemory = ", maxUsedMemory / (1024 * 1024));
@@ -122,6 +123,8 @@ public class PoolMain {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		ThreadErrorRecord.recordTime("", "", preprocessStartTime, startTime);
+		Log.i("## end ", inputPath);
 
 	}
 
@@ -211,25 +214,46 @@ public class PoolMain {
 		}
 		Log.i("iNRClasses.size() = ", iNRClasses.size());
 		HTRChecker.init();
-		PointCollector pointCollector = new PointCollectorExecutor();
-		pointCollector.start(sootClasses);
+		PointCollector executorCollector = new PointCollectorExecutor();
+		executorCollector.start(sootClasses);
+		
+		PointCollector threadCollector = new PointCollectorThread();
+		executorCollector.start(sootClasses);
 		
 		
-		debug(pointCollector);
+//		debug(pointCollector);
 		
-		int eventSize = runnableClasses.size();
-		eventSize += pointCollector.getInitialPoints().size();
-		eventSize += pointCollector.getStartPoints().size();
-		eventSize += pointCollector.getShutDownPoints().size();
-		eventSize += pointCollector.getShutDownNowPoints().size();
-		ThreadErrorRecord.recordWorkingData(eventSize);
+//		int eventSize = runnableClasses.size();
+//		eventSize += pointCollector.getInitialPoints().size();
+//		eventSize += pointCollector.getStartPoints().size();
+//		eventSize += pointCollector.getShutDownPoints().size();
+//		eventSize += pointCollector.getShutDownNowPoints().size();
+//		ThreadErrorRecord.recordWorkingData(eventSize);
 
 		// cg
-		complementCGFromStartToRun(pointCollector);
+		complementCGFromStartToRun(executorCollector);
+		complementCGFromStartToRun(threadCollector);
+		
+		// check
+		
+		new PoolCheck(threadCollector, "Thread", iNRClasses).check();
+		new PoolCheck(threadCollector, "ExecuteService", iNRClasses).check();
+		
+		long timeStart = System.currentTimeMillis();
+		ExecutorService executor = PoolCheck.executor;
+		while (executor.isTerminated() || (System.currentTimeMillis() - timeStart > 900000)) {
+			try {
+				Thread.sleep(5 * 1000);
+			} catch (InterruptedException e) {
+				break;
+			}
+		}
+
+		
 
 	}
-
-	private static void debug(PointCollector pointCollector) {
+	
+	static void debug(PointCollector pointCollector) {
 //		ExceptionHandler handler = new ExceptionHandler();
 		for (SootMethod sootMethod:Scene.v().getSootClass("cn.ac.ios.PoolTest").getMethods()) {
 //			Log.i(sootMethod,"#",handler.hasExceptionHandler(sootMethod));

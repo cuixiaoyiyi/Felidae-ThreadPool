@@ -23,6 +23,9 @@ public class ExecutorSig {
 	public final static String METHOD_SUBSIG_SUBMIT_RUNNABLE_T = "java.util.concurrent.Future submit(java.lang.Runnable,java.lang.Object)";
 	public final static String METHOD_SUBSIG_EXECUTE = "void execute(java.lang.Runnable)";
 	public final static String METHOD_SIG_setRejectedExecutionHandler = "<java.util.concurrent.ThreadPoolExecutor: void setRejectedExecutionHandler(java.util.concurrent.RejectedExecutionHandler)>";
+	public final static String METHOD_SIG_setCorePoolSize = "<java.util.concurrent.ThreadPoolExecutor: void setCorePoolSize(int)>";
+	public final static String METHOD_SIG_setMaximumPoolSize = "<java.util.concurrent.ThreadPoolExecutor: void setMaximumPoolSize(int)>";
+	
 	public final static String METHOD_SIG_setThreadFactory = "<java.util.concurrent.ThreadPoolExecutor: void setThreadFactory(java.util.concurrent.ThreadFactory)>";
 	public static final String METHOD_SUBSIG_awaitTermination = "boolean awaitTermination(long,java.util.concurrent.TimeUnit)";
 	
